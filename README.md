@@ -1,0 +1,95 @@
+# Painel de Inteligência de Mercado - Trads Corretora
+
+Aplicação fullstack para apoiar a decisão de **em quais regiões do Brasil
+estão os melhores mercados, e para qual público**, a partir de dados
+públicos do IBGE.
+
+Desenvolvido como resposta ao [desafio técnico](https://github.com/Trads-Corretora/teste-junior)
+para a vaga de Programador Júnior I.
+
+## Stack
+
+- **Backend:** Python + FastAPI
+- **Banco de dados:** PostgreSQL
+- **Frontend:** Vue.js
+- **Infraestrutura:** Docker / Docker Compose
+
+## Como rodar localmente
+
+em construção
+
+## A herança: análise do código legado
+
+A pasta `legado/` do desafio original continha uma tentativa anterior de um
+ex-funcionário chamado "Rodrigo", um script PHP (`coleta_ibge.php` +
+`config.php`), um CSV exportado (`dados_exportados.csv`) e um painel HTML
+(`painel_antigo.html`), acompanhados de um bilhete (`LEIA-ME-primeiro.txt`)
+descrevendo o que "já funcionava".
+
+O bilhete afirma que a coleta "já salva no banco", que o CSV está
+"certinho e atualizado" e que existe um filtro de renda validado pela
+diretoria. Verificando o código e os dados linha a linha, quase nenhuma
+dessas afirmações se sustenta:
+
+**`config.php`**
+- Usa `mysql_connect`/`mysql_select_db`, extensão **removida do PHP desde a
+  versão 7.0** (2015). O script não roda em nenhuma versão atual do PHP.
+- Senha do banco (`trads@123`) hardcoded no arquivo, com um comentário
+  "depois eu faço" que nunca foi cumprido, credencial exposta no
+  histórico do repositório.
+
+**`coleta_ibge.php`**
+- Chama `https://servicodados.ibge.gov.br/api/v9/...`. A API real do IBGE
+  é a **v1** para localidades (`/api/v1/localidades/estados`) e **v3**
+  para agregados, segundo a documentação. O endpoint `v9` usado no script
+  não existe.
+- `pega_pib()` busca o agregado 5938 / variável 37, que corresponde ao
+  **PIB total do estado**, mas o código trata e nomeia o resultado como
+  "renda per capita". São grandezas completamente diferentes. O PIB
+  estadual está na casa de bilhões de reais.
+- O filtro na linha 29 "renda_per_capita < 2 salários mínimos" compara esse valor de PIB total
+  com R$ 2.824. Uma comparação sem sentido semântico, herdada do erro
+  acima.
+- `salvar_no_banco()` **não grava no banco**: apenas escreve um `.txt`
+  local via `file_put_contents`. A afirmação do bilhete de que os dados
+  "já são salvos na tabela `estados`" é falsa.
+- O script faz requisições apenas para o endpoint de **estado**, nunca de **município**,
+  apesar do bilhete e do painel mencionarem municípios.
+
+**`dados_exportados.csv`** — descrito como "certinho e atualizado", mas
+contém, sem qualquer tratamento:
+- uma linha duplicada (João Pessoa aparece duas vezes);
+- encoding quebrado (`JoÃ£o Pessoa` em vez de "João Pessoa");
+- formato numérico inconsistente (população ora `1234567`, ora
+  `"1.234.567"` como texto com separador de milhar);
+- um registro absurdo ("Município Fantasma", população de 90 milhões,
+  renda de R$ 1.000);
+- um valor de população negativo (Porto Alegre, `-1`);
+- uma linha com coluna extra (`Curitiba;...;extra`);
+- e a ordem de colunas no cabeçalho (`renda;populacao_total`) não bate
+  com a ordem descrita no bilhete (`populacao;renda_media`).
+
+**`painel_antigo.html`**
+- O botão "Atualizar dados" chama `$.getJSON` **direto do navegador** para
+  a API do IBGE, não existe backend nem banco no caminho. Isso contraria
+  justamente o requisito central do desafio (persistir os dados e servir
+  as consultas a partir do próprio banco, sem bater na API do IBGE a cada
+  requisição do usuário): aqui cada usuário, a cada clique, gera uma
+  chamada direta à API pública, sem cache, sem controle de taxa e sem
+  validação do que volta.
+- Usa jQuery 1.7.2 (2012), obsoleto, e declara `charset=ISO-8859-1` num
+  arquivo com dados em UTF-8.
+- Define a função `montaTabela()` mas chama `montatabela()` (minúsculo)
+  no `$(document).ready`, um erro de digitação que impede a tabela de
+  carregar automaticamente ao abrir a página.
+- O endpoint chamado em `carregaDados()` (`/v9/localidades/estados`)
+  retorna objetos de estado (UF), não um array de municípios com
+  `[codigo, municipio, populacao, renda]` como o código assume, mesmo
+  se o endpoint existisse, o formato não bateria com o que o script
+  espera.
+
+**Conclusão:** A analise do legado identificou inconsistências entre a documentação 
+fornecida, implementação e dados exportados. O codigo legado não persiste dados em 
+nenhum banco, aponta para endpoints que não existem, confunde PIB estadual com renda 
+per capita, e o próprio arquivo de dados "de confiança" está inconsistente.
+
