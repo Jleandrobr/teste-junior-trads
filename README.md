@@ -93,3 +93,73 @@ fornecida, implementação e dados exportados. O codigo legado não persiste dad
 nenhum banco, aponta para endpoints que não existem, confunde PIB estadual com renda 
 per capita, e o próprio arquivo de dados "de confiança" está inconsistente.
 
+## Decisões técnicas
+
+Detalhamento completo em [`backend/ARQUITETURA.md`](./backend/ARQUITETURA.md).
+Resumo das escolhas principais:
+
+**Fontes de dados do IBGE.** A partir de 3 perguntas de negócio minhas
+(tamanho do mercado, poder aquisitivo, perfil etário — "onde e pra quem
+vender plano"), usei IA pra buscar agregados correspondentes no
+catálogo do IBGE; ela sugeriu por conta própria um 4º (mercado B2B),
+que avaliei e mantive. Todos verificados na API antes de decidir:
+
+| Pergunta | Agregado | O que traz |
+|---|---|---|
+| Tamanho do mercado | **6579** | População residente estimada |
+| Perfil etário | **9515** | Índice de envelhecimento, idade mediana |
+| Poder aquisitivo | **10289** | Rendimento médio/mediano do trabalho (Censo 2022) |
+| Mercado B2B | **1685** | CEMPRE — nº empresas, pessoal ocupado, salários |
+
+Descartei o **PIB dos Municípios (5938)** — não tem PIB per capita
+pronto, calcular via `PIB ÷ população` repetiria o erro do legado — e a
+**PNS "plano de saúde"**, que só cobre 27 capitais, não os 5.570
+municípios.
+
+
+
+## Principal vs. extra
+
+em construção
+
+
+## Limitações conhecidas e próximos passos
+
+- **Dado de referência é 2021/2022, não tempo real.** É limitação
+  estrutural do IBGE (ver acima), não do projeto — mas significa que a
+  aplicação não reflete a população/renda de hoje, e sim do último
+  Censo/estimativa disponível.
+
+
+## Uso de IA
+
+Usei o Claude como assistente durante o desenvolvimento. Registro
+aqui como, para deixar claro o que foi decisão minha e o que a IA
+sugeriu:
+
+- **Leitura do legado:** pedi para a IA ler os pontos que eu tinha anotado
+  sobre a analise dos arquivos da pasta `legado/` e apontar inconsistências 
+  entre o que o bilhete do ex-funcionário afirmava e o que o código/dados 
+  realmente faziam. Conferi cada ponto levantadom, endpoint da API, os problemas
+  no CSV, pontos que "foram implementados", mas não foram.
+- **Melhoria de texto:** a seção "A herança: análise do código legado"
+  partiu de uma escrita inicial minha, com os pontos que eu já tinha
+  levantado sobre o legado; pedi para a IA revisar e melhorar a
+  redação, mantendo o conteúdo técnico que eu havia apurado. Conferi o 
+  texto reescrito antes de aceitar.
+- **Escolha dos agregados do IBGE:** mandei pra IA **3 perguntas de
+  negócio minhas** (tamanho do mercado, poder aquisitivo, perfil
+  etário) pra ela buscar agregados correspondentes no catálogo do
+  IBGE — são milhares de tabelas, inviável vasculhar uma por uma na
+  mão. A IA trouxe os 3 agregados e sugeriu por conta própria um
+  4º, de mercado B2B/empresarial (CEMPRE). Avaliei essa sugestão e
+  mantive, pela lógica de que a maioria dos planos de saúde no Brasil é
+  coletivo via empregador. Depois conferi cada um dos 4 nos metadados
+  reais da API (nível geográfico, período) e testei consulta de dado
+  real em municípios específicos antes de decidir — inclusive descartei
+  um agregado que a busca trouxe (Pesquisa Nacional de Saúde) depois de
+  ver que só cobria 27 capitais, não os municípios.
+- **Estrutura inicial e redação da análise do legado:** pedi para a IA
+  montar o esqueleto de pastas/README; revisei o texto e
+  ajustei antes de commitar.
+
