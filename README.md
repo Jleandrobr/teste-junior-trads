@@ -16,7 +16,27 @@ para a vaga de Programador Júnior I.
 
 ## Como rodar localmente
 
-em construção
+Pré-requisito: Docker + Docker Compose instalados.
+
+```bash
+# Configurar variáveis de ambiente (ajuste a senha)
+cp .env.example .env
+
+# Subir a aplicação inteira
+docker compose up -d --build
+```
+
+Isso já deixa **banco + backend rodando**. Confirmar:
+`http://localhost:8000/health` deve responder `{"status": "ok"}`.
+
+**Na primeira vez** (banco ainda vazio), rode também a criação das
+tabelas e a carga inicial de dados do IBGE:
+
+```bash
+docker compose run --rm backend alembic upgrade head
+docker compose run --rm backend python -m app.ingestion.run
+```
+
 
 ## A herança: análise do código legado
 
