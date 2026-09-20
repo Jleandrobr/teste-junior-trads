@@ -14,6 +14,12 @@ VARIAVEL_IDADE_MEDIANA = 10613
 VARIAVEL_RAZAO_SEXO = 8845
 ANO_PERFIL_DEMOGRAFICO = 2022
 
+AGREGADO_RENDA = 10289
+VARIAVEL_RENDIMENTO_MEDIO = 13536
+VARIAVEL_RENDIMENTO_MEDIANO = 13537
+ANO_RENDA = 2022
+CLASSIFICACAO_RENDA = "2[6794]|86[95251]"
+
 
 def ingerir_localidades(db: Session) -> None:
     estados = buscar_estados()
@@ -59,5 +65,29 @@ def ingerir_perfil_demografico(db: Session) -> None:
             indice[municipio_id],
             idade[municipio_id],
             razao[municipio_id],
+        )
+    db.commit()
+
+
+def ingerir_renda(db: Session) -> None:
+    ano = ANO_RENDA
+
+    serie_medio = buscar_serie(AGREGADO_RENDA, ano, VARIAVEL_RENDIMENTO_MEDIO, CLASSIFICACAO_RENDA)
+    medio = extrair_valores(serie_medio, ano)
+
+    serie_mediano = buscar_serie(AGREGADO_RENDA, ano, VARIAVEL_RENDIMENTO_MEDIANO, CLASSIFICACAO_RENDA)
+    mediano = extrair_valores(serie_mediano, ano)
+
+    for municipio_id in medio:
+        if municipio_id not in mediano:
+            print(f"aviso: município {municipio_id} sem renda completa - pulando")
+            continue
+
+        indicador_repository.salvar_renda(
+            db,
+            municipio_id,
+            ano,
+            medio[municipio_id],
+            mediano[municipio_id],
         )
     db.commit()

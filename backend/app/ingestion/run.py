@@ -3,6 +3,7 @@ from app.services.ingestao_service import (
     ingerir_localidades,
     ingerir_perfil_demografico,
     ingerir_populacao,
+    ingerir_renda,
 )
 
 
@@ -20,6 +21,10 @@ def main() -> None:
         print("Ingerindo perfil demográfico (agregado 9515)...")
         ingerir_perfil_demografico(db)
         print("Perfil demográfico ingerido com sucesso.")
+
+        print("Ingerindo renda (agregado 10289)...")
+        ingerir_renda(db)
+        print("Renda ingerida com sucesso.")
     finally:
         db.close()
 
