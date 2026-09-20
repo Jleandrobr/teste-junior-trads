@@ -20,6 +20,12 @@ VARIAVEL_RENDIMENTO_MEDIANO = 13537
 ANO_RENDA = 2022
 CLASSIFICACAO_RENDA = "2[6794]|86[95251]"
 
+AGREGADO_EMPRESA = 1685
+VARIAVEL_QTD_EMPRESAS = 367
+VARIAVEL_PESSOAL_ASSALARIADO = 708
+VARIAVEL_SALARIOS = 662
+ANO_EMPRESA = 2021
+
 
 def ingerir_localidades(db: Session) -> None:
     estados = buscar_estados()
@@ -89,5 +95,33 @@ def ingerir_renda(db: Session) -> None:
             ano,
             medio[municipio_id],
             mediano[municipio_id],
+        )
+    db.commit()
+
+
+def ingerir_empresa(db: Session) -> None:
+    ano = ANO_EMPRESA
+
+    serie_qtd = buscar_serie(AGREGADO_EMPRESA, ano, VARIAVEL_QTD_EMPRESAS)
+    qtd = extrair_valores(serie_qtd, ano)
+
+    serie_pessoal = buscar_serie(AGREGADO_EMPRESA, ano, VARIAVEL_PESSOAL_ASSALARIADO)
+    pessoal = extrair_valores(serie_pessoal, ano)
+
+    serie_salarios = buscar_serie(AGREGADO_EMPRESA, ano, VARIAVEL_SALARIOS)
+    salarios = extrair_valores(serie_salarios, ano)
+
+    for municipio_id in qtd:
+        if municipio_id not in pessoal or municipio_id not in salarios:
+            print(f"aviso: município {municipio_id} sem dados de empresas completos - pulando")
+            continue
+
+        indicador_repository.salvar_empresa(
+            db,
+            municipio_id,
+            ano,
+            int(qtd[municipio_id]),
+            int(pessoal[municipio_id]),
+            salarios[municipio_id],
         )
     db.commit()

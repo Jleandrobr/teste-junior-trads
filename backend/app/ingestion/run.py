@@ -1,5 +1,6 @@
 from app.db.session import SessionLocal
 from app.services.ingestao_service import (
+    ingerir_empresa,
     ingerir_localidades,
     ingerir_perfil_demografico,
     ingerir_populacao,
@@ -25,6 +26,10 @@ def main() -> None:
         print("Ingerindo renda (agregado 10289)...")
         ingerir_renda(db)
         print("Renda ingerida com sucesso.")
+
+        print("Ingerindo empresas (agregado 1685)...")
+        ingerir_empresa(db)
+        print("Empresas ingeridas com sucesso.")
     finally:
         db.close()
 

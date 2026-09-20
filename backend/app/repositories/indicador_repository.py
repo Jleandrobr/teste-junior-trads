@@ -1,7 +1,7 @@
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
-from app.db.models import PerfilDemografico, Populacao, Renda
+from app.db.models import Empresa, PerfilDemografico, Populacao, Renda
 
 
 def salvar_populacao(db: Session, municipio_id: int, ano: int, populacao: int) -> None:
@@ -49,6 +49,32 @@ def salvar_renda(
         set_={
             "rendimento_medio": rendimento_medio,
             "rendimento_mediano": rendimento_mediano,
+        },
+    )
+    db.execute(stmt)
+
+
+def salvar_empresa(
+    db: Session,
+    municipio_id: int,
+    ano: int,
+    qtd_empresas: int,
+    pessoal_assalariado: int,
+    salarios_mil_reais: float,
+) -> None:
+    stmt = insert(Empresa).values(
+        municipio_id=municipio_id,
+        ano=ano,
+        qtd_empresas=qtd_empresas,
+        pessoal_assalariado=pessoal_assalariado,
+        salarios_mil_reais=salarios_mil_reais,
+    )
+    stmt = stmt.on_conflict_do_update(
+        index_elements=["municipio_id", "ano"],
+        set_={
+            "qtd_empresas": qtd_empresas,
+            "pessoal_assalariado": pessoal_assalariado,
+            "salarios_mil_reais": salarios_mil_reais,
         },
     )
     db.execute(stmt)
