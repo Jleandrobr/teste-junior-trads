@@ -161,7 +161,7 @@ municípios.
 - Frontend com dashboard (Vue) — tabela ranking + gráfico de dispersão
   (renda × índice de envelhecimento, bolha = população), com os
   filtros acima atualizando as duas visualizações.
-- Docker / Docker Compose
+- Docker / Docker Compose — os 3 serviços sobem juntos com
   `docker compose up`.
 
 **Extra (não pedido, entregue de qualquer forma):**
@@ -210,4 +210,17 @@ sugeriu:
 - **Estrutura inicial e redação da análise do legado:** pedi para a IA
   montar o esqueleto de pastas/README; revisei o texto e
   ajustei antes de commitar.
+- **Testes automatizados:** Utilizei IA para implementar seguindo uma
+  política que eu já tinha decidido antes de qualquer teste existir
+  (Postgres real num banco isolado, não SQLite — mesmo motivo do banco
+  de desenvolvimento; teste obrigatório por funcionalidade). São testes
+  de integração da API (batem no endpoint de verdade, banco real), não
+  testes unitários no sentido estrito — decisão consciente pra pegar
+  bug de verdade entre as camadas, não só validar uma função isolada.
+- **Telas do frontend:** Solicitei à IA para implementar em cima de decisões
+  que eu já tinha tomado (quais 2 visualizações mostrar, e o que cada
+  uma responde de negócio — tabela ranking e dispersão renda × índice
+  de envelhecimento). Testei no navegador de verdade antes de aceitar
+  — inclusive encontrei um bug de CORS que a API não mostrava ao testar
+  via terminal, só apareceu no navegador.
 
