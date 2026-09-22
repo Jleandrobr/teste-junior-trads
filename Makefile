@@ -1,13 +1,19 @@
-.PHONY: up down build migrate ingest setup test logs
+.PHONY: env up down down-v build migrate ingest setup test logs
 
-up:
+env:
+	cp -n .env.example .env
+
+up: env
 	docker compose up -d --build
 
 down:
 	docker compose down
 
+down-v:
+	docker compose down -v
+
 build:
-	docker compose build backend
+	docker compose build
 
 migrate:
 	docker compose run --rm backend alembic upgrade head
@@ -22,4 +28,4 @@ test:
 	docker compose stop db-test
 
 logs:
-	docker compose logs -f backend
+	docker compose logs -f
