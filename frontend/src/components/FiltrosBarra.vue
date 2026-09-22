@@ -14,7 +14,7 @@ const emit = defineEmits(["update:modelValue"]);
 </script>
 
 <template>
-  <div class="filtros">
+  <div class="filtros cartao">
     <label>
       Estado
       <select
@@ -69,13 +69,38 @@ const emit = defineEmits(["update:modelValue"]);
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
-  margin-bottom: 24px;
+  align-items: flex-end;
 }
 
 .filtros label {
   display: flex;
   flex-direction: column;
+  gap: 6px;
+  width: 220px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--cor-texto-muted);
+}
+
+.filtros select,
+.filtros input {
+  font-family: inherit;
   font-size: 14px;
-  gap: 4px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--cor-texto);
+  background: #ffffff;
+  border: 1px solid #d6d5cd;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.filtros select:focus,
+.filtros input:focus {
+  outline: 2px solid var(--cor-accent);
+  outline-offset: 1px;
 }
 </style>
