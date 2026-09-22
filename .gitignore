@@ -5,6 +5,11 @@ __pycache__/
 venv/
 *.egg-info/
 
+# Testes (pytest / pytest-cov)
+.pytest_cache/
+.coverage
+htmlcov/
+
 # Node / Vue
 node_modules/
 dist/
