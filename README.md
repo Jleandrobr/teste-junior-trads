@@ -37,6 +37,15 @@ docker compose run --rm backend alembic upgrade head
 docker compose run --rm backend python -m app.ingestion.run
 ```
 
+**Rodar os testes automatizados:**
+
+```bash
+docker compose run --rm backend pytest -v
+```
+
+Se preferir, pode usar o `Makefile` (`make up`,
+`make setup`, `make test` etc.) se tiver `make` instalado.
+
 
 ## A herança: análise do código legado
 
@@ -140,7 +149,20 @@ municípios.
 
 ## Principal vs. extra
 
-em construção
+**Núcleo (pedido pelo desafio):**
+- Análise do legado.
+- Integração real com a API do IBGE.
+- Persistência dos dados no Postgres, aplicação consulta o próprio banco, não
+  bate na API do IBGE a cada requisição do usuário.
+- Consultas e filtros via API (`/api/v1/estados`, `/api/v1/municipios`
+  com filtro por estado, busca por nome, ordenação e limite).
+- Docker / Docker Compose.
+
+**Extra (não pedido, entregue de qualquer forma):**
+- Testes unitários.
+- `Makefile` com os comandos do dia a dia.
+- `backend/ARQUITETURA.md` com o detalhamento técnico completo.
+
 
 
 ## Limitações conhecidas e próximos passos
