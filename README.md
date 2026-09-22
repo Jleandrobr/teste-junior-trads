@@ -26,8 +26,10 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-Isso já deixa **banco + backend rodando**. Confirmar:
-`http://localhost:8000/health` deve responder `{"status": "ok"}`.
+Isso já deixa **banco + backend + frontend rodando**. Confirmar:
+- `http://localhost:8000/health` deve responder `{"status": "ok"}`.
+- `http://localhost:5173` deve abrir o dashboard (tabela ranking +
+  gráfico de dispersão).
 
 **Na primeira vez** (banco ainda vazio), rode também a criação das
 tabelas e a carga inicial de dados do IBGE:
@@ -156,10 +158,14 @@ municípios.
   bate na API do IBGE a cada requisição do usuário.
 - Consultas e filtros via API (`/api/v1/estados`, `/api/v1/municipios`
   com filtro por estado, busca por nome, ordenação e limite).
-- Docker / Docker Compose.
+- Frontend com dashboard (Vue) — tabela ranking + gráfico de dispersão
+  (renda × índice de envelhecimento, bolha = população), com os
+  filtros acima atualizando as duas visualizações.
+- Docker / Docker Compose
+  `docker compose up`.
 
 **Extra (não pedido, entregue de qualquer forma):**
-- Testes unitários.
+- Testes unitários (backend).
 - `Makefile` com os comandos do dia a dia.
 - `backend/ARQUITETURA.md` com o detalhamento técnico completo.
 
