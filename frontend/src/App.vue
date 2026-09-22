@@ -1,20 +1,32 @@
 <script setup>
-import { ref, onMounted } from "vue";
-
-
-const API_URL = "http://localhost:8000";
+import { ref, reactive, onMounted } from "vue";
+import { buscarEstados, buscarMunicipios } from "./api.js";
+import FiltrosBarra from "./components/FiltrosBarra.vue";
+import TabelaRanking from "./components/TabelaRanking.vue";
+import GraficoDispersao from "./components/GraficoDispersao.vue";
 
 const estados = ref([]);
+const municipios = ref([]);
 const carregando = ref(true);
 const erro = ref(null);
 
-async function buscarEstados() {
+const filtros = reactive({
+  estado: "",
+  nomeMunicipio: "",
+  ordenarPor: "populacao",
+  direcao: "desc",
+});
+
+async function carregarMunicipios() {
   try {
-    const resposta = await fetch(`${API_URL}/api/v1/estados`);
-    if (!resposta.ok) {
-      throw new Error(`API respondeu ${resposta.status}`);
-    }
-    estados.value = await resposta.json();
+    municipios.value = await buscarMunicipios({
+      estado: filtros.estado,
+      nomeMunicipio: filtros.nomeMunicipio,
+      ordenarPor: filtros.ordenarPor,
+      direcao: filtros.direcao,
+      limite: 50,
+    });
+    erro.value = null;
   } catch (e) {
     erro.value = e.message;
   } finally {
@@ -22,15 +34,43 @@ async function buscarEstados() {
   }
 }
 
-onMounted(buscarEstados);
+let temporizadorBusca = null;
+function atualizarFiltros(novosFiltros) {
+  Object.assign(filtros, novosFiltros);
+
+  clearTimeout(temporizadorBusca);
+  temporizadorBusca = setTimeout(carregarMunicipios, 900);
+}
+
+onMounted(async () => {
+  try {
+    estados.value = await buscarEstados();
+  } catch (e) {
+    erro.value = e.message;
+  }
+  await carregarMunicipios();
+});
 </script>
 
 <template>
   <main>
     <h1>Painel de Inteligência de Mercado</h1>
 
-    <p v-if="carregando">Carregando estados...</p>
-    <p v-else-if="erro">Erro ao falar com a API: {{ erro }}</p>
-    <p v-else>Conectado à API - {{ estados.length }} estados carregados.</p>
+    <FiltrosBarra :estados="estados" :model-value="filtros" @update:model-value="atualizarFiltros" />
+
+    <p v-if="erro">Erro ao falar com a API: {{ erro }}</p>
+    <p v-else-if="carregando">Carregando...</p>
+    <template v-else>
+      <GraficoDispersao :municipios="municipios" />
+      <TabelaRanking :municipios="municipios" />
+    </template>
   </main>
 </template>
+
+<style>
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0;
+  padding: 24px;
+}
+</style>
