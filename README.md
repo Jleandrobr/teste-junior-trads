@@ -157,7 +157,7 @@ municípios.
 - Persistência dos dados no Postgres, aplicação consulta o próprio banco, não
   bate na API do IBGE a cada requisição do usuário.
 - Consultas e filtros via API (`/api/v1/estados`, `/api/v1/municipios`
-  com filtro por estado, busca por nome, ordenação e limite).
+  com filtro por estado, região, busca por nome de município, ordenação e limite).
 - Frontend com dashboard (Vue) — tabela ranking + gráfico de dispersão
   (renda × índice de envelhecimento, bolha = população), com os
   filtros acima atualizando as duas visualizações.
@@ -168,6 +168,10 @@ municípios.
 - Testes unitários (backend).
 - `Makefile` com os comandos do dia a dia.
 - `backend/ARQUITETURA.md` com o detalhamento técnico completo.
+- Paginação no endpoint `/api/v1/municipios`.
+- CI no GitHub Actions (`.github/workflows/ci.yml`): roda os testes
+  automatizados do backend e confirma o build do frontend a cada
+  push/PR pra `main`.
 
 
 
