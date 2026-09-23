@@ -12,8 +12,9 @@ def listar_municipios(
     db: Session,
     estado: str | None,
     nome_municipio: str | None,
+    regiao: str | None,
     ordenar_por: str,
     direcao: str,
     limite: int,
 ):
-    return municipio_repository.listar_com_indicadores(db, estado, nome_municipio, ordenar_por, direcao, limite)
+    return municipio_repository.listar_com_indicadores(db, estado, nome_municipio, regiao, ordenar_por, direcao, limite)

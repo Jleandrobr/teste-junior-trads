@@ -26,6 +26,7 @@ def listar_com_indicadores(
     db: Session,
     estado: str | None,
     nome_municipio: str | None,
+    regiao: str | None,
     ordenar_por: str,
     direcao: str,
     limite: int,
@@ -51,6 +52,9 @@ def listar_com_indicadores(
 
     if estado is not None:
         query = query.where(Estado.sigla == estado)
+
+    if regiao is not None:
+        query = query.where(Estado.regiao == regiao)
 
     coluna_ordenacao = COLUNAS_ORDENAVEIS[ordenar_por]
     if direcao == "asc":

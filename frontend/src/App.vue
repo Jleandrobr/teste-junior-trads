@@ -13,6 +13,7 @@ const erro = ref(null);
 const filtros = reactive({
   estado: "",
   nomeMunicipio: "",
+  regiao: "",
   ordenarPor: "populacao",
   direcao: "desc",
 });
@@ -21,6 +22,7 @@ async function carregarMunicipios() {
   try {
     municipios.value = await buscarMunicipios({
       estado: filtros.estado,
+      regiao: filtros.regiao,
       nomeMunicipio: filtros.nomeMunicipio,
       ordenarPor: filtros.ordenarPor,
       direcao: filtros.direcao,

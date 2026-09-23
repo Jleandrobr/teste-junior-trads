@@ -8,10 +8,11 @@ export async function buscarEstados() {
   return resposta.json();
 }
 
-export async function buscarMunicipios({ estado, nomeMunicipio, ordenarPor, direcao, limite }) {
+export async function buscarMunicipios({ estado, nomeMunicipio, regiao, ordenarPor, direcao, limite }) {
   const params = new URLSearchParams();
   if (estado) params.set("estado", estado);
   if (nomeMunicipio) params.set("nome_municipio", nomeMunicipio);
+  if (regiao) params.set("regiao", regiao);
   if (ordenarPor) params.set("ordenar_por", ordenarPor);
   if (direcao) params.set("direcao", direcao);
   if (limite) params.set("limite", limite);

@@ -29,6 +29,19 @@ const emit = defineEmits(["update:modelValue"]);
     </label>
 
     <label>
+      Região
+      <select
+        :value="modelValue.regiao"
+        @change="emit('update:modelValue', { ...modelValue, regiao: $event.target.value })"
+        >
+        <option value="">Todas</option>
+        <option v-for="regiao in ['Norte', 'Nordeste', 'Centro-Oeste', 'Sudeste', 'Sul']" :key="regiao" :value="regiao">
+          {{ regiao }}
+        </option>
+      </select>
+    </label>
+
+    <label>
       Buscar município
       <input
         type="text"

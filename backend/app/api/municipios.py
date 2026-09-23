@@ -10,6 +10,7 @@ from app.services import indicadores_service
 router = APIRouter(prefix="/api/v1/municipios", tags=["municipios"])
 
 OrdenarPor = Literal["populacao", "renda_media", "renda_mediana", "indice_envelhecimento"]
+Regiao = Literal["Norte", "Nordeste", "Centro-Oeste", "Sudeste", "Sul"]
 Direcao = Literal["asc", "desc"]
 
 
@@ -17,9 +18,10 @@ Direcao = Literal["asc", "desc"]
 def listar_municipios(
     estado: str | None = None,
     nome_municipio: str | None = None,
+    regiao: Regiao | None = None,
     ordenar_por: OrdenarPor = "populacao",
     direcao: Direcao = "desc",
     limite: int = 50,
     db: Session = Depends(get_db),
 ):
-    return indicadores_service.listar_municipios(db, estado, nome_municipio, ordenar_por, direcao, limite)
+    return indicadores_service.listar_municipios(db, estado, nome_municipio, regiao, ordenar_por, direcao, limite)
