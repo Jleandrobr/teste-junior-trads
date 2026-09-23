@@ -5,8 +5,12 @@ import FiltrosBarra from "./components/FiltrosBarra.vue";
 import TabelaRanking from "./components/TabelaRanking.vue";
 import GraficoDispersao from "./components/GraficoDispersao.vue";
 
+const LIMITE_POR_PAGINA = 50;
+
 const estados = ref([]);
 const municipios = ref([]);
+const totalMunicipios = ref(0);
+const paginaAtual = ref(1);
 const carregando = ref(true);
 const erro = ref(null);
 
@@ -20,14 +24,17 @@ const filtros = reactive({
 
 async function carregarMunicipios() {
   try {
-    municipios.value = await buscarMunicipios({
+    const resposta = await buscarMunicipios({
       estado: filtros.estado,
       regiao: filtros.regiao,
       nomeMunicipio: filtros.nomeMunicipio,
       ordenarPor: filtros.ordenarPor,
       direcao: filtros.direcao,
-      limite: 50,
+      limite: LIMITE_POR_PAGINA,
+      offset: (paginaAtual.value - 1) * LIMITE_POR_PAGINA,
     });
+    municipios.value = resposta.resultados;
+    totalMunicipios.value = resposta.total;
     erro.value = null;
   } catch (e) {
     erro.value = e.message;
@@ -39,9 +46,15 @@ async function carregarMunicipios() {
 let temporizadorBusca = null;
 function atualizarFiltros(novosFiltros) {
   Object.assign(filtros, novosFiltros);
+  paginaAtual.value = 1;
 
   clearTimeout(temporizadorBusca);
   temporizadorBusca = setTimeout(carregarMunicipios, 900);
+}
+
+function irParaPagina(novaPagina) {
+  paginaAtual.value = novaPagina;
+  carregarMunicipios();
 }
 
 onMounted(async () => {
@@ -69,7 +82,14 @@ onMounted(async () => {
     <p v-if="erro" class="mensagem">Erro ao falar com a API: {{ erro }}</p>
     <p v-else-if="carregando" class="mensagem">Carregando...</p>
     <div v-else class="conteudo">
-      <TabelaRanking :municipios="municipios" />
+      <TabelaRanking
+        :municipios="municipios"
+        :offset="(paginaAtual - 1) * LIMITE_POR_PAGINA"
+        :total="totalMunicipios"
+        :pagina-atual="paginaAtual"
+        :limite-por-pagina="LIMITE_POR_PAGINA"
+        @mudar-pagina="irParaPagina"
+      />
       <GraficoDispersao :municipios="municipios" />
     </div>
   </main>

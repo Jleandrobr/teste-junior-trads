@@ -8,7 +8,7 @@ export async function buscarEstados() {
   return resposta.json();
 }
 
-export async function buscarMunicipios({ estado, nomeMunicipio, regiao, ordenarPor, direcao, limite }) {
+export async function buscarMunicipios({ estado, nomeMunicipio, regiao, ordenarPor, direcao, limite, offset }) {
   const params = new URLSearchParams();
   if (estado) params.set("estado", estado);
   if (nomeMunicipio) params.set("nome_municipio", nomeMunicipio);
@@ -16,6 +16,7 @@ export async function buscarMunicipios({ estado, nomeMunicipio, regiao, ordenarP
   if (ordenarPor) params.set("ordenar_por", ordenarPor);
   if (direcao) params.set("direcao", direcao);
   if (limite) params.set("limite", limite);
+  if (offset) params.set("offset", offset);
 
   const resposta = await fetch(`${API_URL}/api/v1/municipios?${params.toString()}`);
   if (!resposta.ok) {

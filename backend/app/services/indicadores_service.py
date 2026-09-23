@@ -16,5 +16,8 @@ def listar_municipios(
     ordenar_por: str,
     direcao: str,
     limite: int,
+    offset: int,
 ):
-    return municipio_repository.listar_com_indicadores(db, estado, nome_municipio, regiao, ordenar_por, direcao, limite)
+    return municipio_repository.listar_com_indicadores(
+        db, estado, nome_municipio, regiao, ordenar_por, direcao, limite, offset
+    )

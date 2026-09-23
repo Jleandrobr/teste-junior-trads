@@ -1,10 +1,32 @@
 <script setup>
-defineProps({
+import { computed } from "vue";
+
+const props = defineProps({
   municipios: {
     type: Array,
     required: true,
   },
+  offset: {
+    type: Number,
+    required: true,
+  },
+  total: {
+    type: Number,
+    required: true,
+  },
+  paginaAtual: {
+    type: Number,
+    required: true,
+  },
+  limitePorPagina: {
+    type: Number,
+    required: true,
+  },
 });
+
+const emit = defineEmits(["mudar-pagina"]);
+
+const totalPaginas = computed(() => Math.max(1, Math.ceil(props.total / props.limitePorPagina)));
 
 function formatarNumero(valor) {
   return new Intl.NumberFormat("pt-BR").format(valor);
@@ -34,8 +56,12 @@ function formatarMoeda(valor) {
         <tr v-if="municipios.length === 0">
           <td colspan="7">Nenhum município encontrado com esse filtro.</td>
         </tr>
-        <tr v-for="(municipio, indice) in municipios" :key="municipio.id" :class="{ destaque: indice === 0 }">
-          <td class="col-rank"><span class="selo-rank">{{ indice + 1 }}</span></td>
+        <tr
+          v-for="(municipio, indice) in municipios"
+          :key="municipio.id"
+          :class="{ destaque: offset + indice === 0 }"
+        >
+          <td class="col-rank"><span class="selo-rank">{{ offset + indice + 1 }}</span></td>
           <td>{{ municipio.nome }}</td>
           <td class="col-estado">{{ municipio.estado }}</td>
           <td class="col-numero">{{ formatarNumero(municipio.populacao) }}</td>
@@ -45,6 +71,17 @@ function formatarMoeda(valor) {
         </tr>
       </tbody>
     </table>
+
+    <div class="paginacao" v-if="total > 0">
+      <span class="paginacao-info">
+        Mostrando {{ offset + 1 }}-{{ Math.min(offset + municipios.length, total) }} de {{ formatarNumero(total) }}
+      </span>
+      <div class="paginacao-botoes">
+        <button :disabled="paginaAtual === 1" @click="emit('mudar-pagina', paginaAtual - 1)">Anterior</button>
+        <span>Página {{ paginaAtual }} de {{ totalPaginas }}</span>
+        <button :disabled="paginaAtual === totalPaginas" @click="emit('mudar-pagina', paginaAtual + 1)">Próxima</button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -115,5 +152,38 @@ function formatarMoeda(valor) {
   background: var(--cor-accent);
   border-color: var(--cor-accent);
   color: #ffffff;
+}
+
+.paginacao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--cor-texto-muted);
+}
+
+.paginacao-botoes {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.paginacao-botoes button {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cor-texto);
+  background: #ffffff;
+  border: 1px solid #d6d5cd;
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.paginacao-botoes button:disabled {
+  color: var(--cor-texto-muted);
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 </style>

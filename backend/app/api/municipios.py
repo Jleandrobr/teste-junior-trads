@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
-from app.schemas import MunicipioComIndicadoresResponse
+from app.schemas import MunicipiosPaginadosResponse
 from app.services import indicadores_service
 
 router = APIRouter(prefix="/api/v1/municipios", tags=["municipios"])
@@ -14,7 +14,7 @@ Regiao = Literal["Norte", "Nordeste", "Centro-Oeste", "Sudeste", "Sul"]
 Direcao = Literal["asc", "desc"]
 
 
-@router.get("", response_model=list[MunicipioComIndicadoresResponse])
+@router.get("", response_model=MunicipiosPaginadosResponse)
 def listar_municipios(
     estado: str | None = None,
     nome_municipio: str | None = None,
@@ -22,6 +22,10 @@ def listar_municipios(
     ordenar_por: OrdenarPor = "populacao",
     direcao: Direcao = "desc",
     limite: int = 50,
+    offset: int = 0,
     db: Session = Depends(get_db),
 ):
-    return indicadores_service.listar_municipios(db, estado, nome_municipio, regiao, ordenar_por, direcao, limite)
+    total, resultados = indicadores_service.listar_municipios(
+        db, estado, nome_municipio, regiao, ordenar_por, direcao, limite, offset
+    )
+    return {"total": total, "resultados": resultados}

@@ -22,3 +22,8 @@ class MunicipioComIndicadoresResponse(BaseModel):
     qtd_empresas: int
 
     model_config = {"from_attributes": True}
+
+
+class MunicipiosPaginadosResponse(BaseModel):
+    total: int
+    resultados: list[MunicipioComIndicadoresResponse]

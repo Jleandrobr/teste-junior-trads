@@ -58,10 +58,11 @@ def test_listar_municipios_retorna_indicadores_combinados(client, db_session):
 
     assert resposta.status_code == 200
     dados = resposta.json()
-    assert len(dados) == 1
-    assert dados[0]["nome"] == "João Pessoa"
-    assert dados[0]["estado"] == "PB"
-    assert dados[0]["populacao"] == 800000
+    assert dados["total"] == 1
+    assert len(dados["resultados"]) == 1
+    assert dados["resultados"][0]["nome"] == "João Pessoa"
+    assert dados["resultados"][0]["estado"] == "PB"
+    assert dados["resultados"][0]["populacao"] == 800000
 
 
 def test_listar_municipios_filtra_por_estado(client, db_session):
@@ -70,7 +71,7 @@ def test_listar_municipios_filtra_por_estado(client, db_session):
 
     resposta = client.get("/api/v1/municipios?estado=PB")
 
-    dados = resposta.json()
+    dados = resposta.json()["resultados"]
     assert len(dados) == 1
     assert dados[0]["nome"] == "João Pessoa"
 
@@ -80,7 +81,7 @@ def test_listar_municipios_busca_por_nome_ignora_acento(client, db_session):
 
     resposta = client.get("/api/v1/municipios?nome_municipio=joao pessoa")
 
-    dados = resposta.json()
+    dados = resposta.json()["resultados"]
     assert len(dados) == 1
     assert dados[0]["nome"] == "João Pessoa"
 
@@ -93,7 +94,31 @@ def test_listar_municipios_ordena_e_limita(client, db_session):
     resposta = client.get("/api/v1/municipios?ordenar_por=populacao&direcao=asc&limite=2")
 
     dados = resposta.json()
-    assert [linha["nome"] for linha in dados] == ["João Pessoa", "Belo Horizonte"]
+    assert dados["total"] == 3
+    assert [linha["nome"] for linha in dados["resultados"]] == ["João Pessoa", "Belo Horizonte"]
+
+
+def test_listar_municipios_pagina_com_offset(client, db_session):
+    criar_municipio_completo(db_session, 2507507, "João Pessoa", 25, "PB", populacao=800000)
+    criar_municipio_completo(db_session, 3550308, "São Paulo", 35, "SP", regiao="Sudeste", populacao=12000000)
+    criar_municipio_completo(db_session, 3106200, "Belo Horizonte", 31, "MG", regiao="Sudeste", populacao=2500000)
+
+    resposta = client.get("/api/v1/municipios?ordenar_por=populacao&direcao=asc&limite=2&offset=2")
+
+    dados = resposta.json()
+    assert dados["total"] == 3
+    assert [linha["nome"] for linha in dados["resultados"]] == ["São Paulo"]
+
+
+def test_listar_municipios_pagina_com_offset_na_busca_por_nome(client, db_session):
+    criar_municipio_completo(db_session, 2507507, "João Pessoa", 25, "PB")
+    criar_municipio_completo(db_session, 3550308, "São Paulo", 35, "SP", regiao="Sudeste")
+
+    resposta = client.get("/api/v1/municipios?ordenar_por=populacao&direcao=asc&limite=1&offset=1")
+
+    dados = resposta.json()
+    assert dados["total"] == 2
+    assert len(dados["resultados"]) == 1
 
 
 def test_listar_municipios_nao_inclui_municipio_com_dado_incompleto(client, db_session):
@@ -105,7 +130,7 @@ def test_listar_municipios_nao_inclui_municipio_com_dado_incompleto(client, db_s
 
     resposta = client.get("/api/v1/municipios")
 
-    nomes = [linha["nome"] for linha in resposta.json()]
+    nomes = [linha["nome"] for linha in resposta.json()["resultados"]]
     assert "João Pessoa" in nomes
     assert "Boa Esperança do Norte" not in nomes
 
@@ -117,10 +142,11 @@ def test_listar_municipios_filtra_por_regiao(client, db_session):
     resposta = client.get("/api/v1/municipios?regiao=Norte")
 
     dados = resposta.json()
-    assert len(dados) == 0
+    assert dados["total"] == 0
+    assert len(dados["resultados"]) == 0
 
     resposta = client.get("/api/v1/municipios?regiao=Nordeste")
 
     dados = resposta.json()
-    assert len(dados) == 1
-    assert dados[0]["nome"] == "João Pessoa"
+    assert dados["total"] == 1
+    assert dados["resultados"][0]["nome"] == "João Pessoa"

@@ -30,6 +30,7 @@ def listar_com_indicadores(
     ordenar_por: str,
     direcao: str,
     limite: int,
+    offset: int,
 ):
     query = (
         select(
@@ -62,17 +63,16 @@ def listar_com_indicadores(
     else:
         query = query.order_by(coluna_ordenacao.desc())
 
-    if nome_municipio is None:
-        query = query.limit(limite)
-        return db.execute(query).all()
-
     resultado = db.execute(query).all()
 
-    busca_normalizada = remover_acentos(nome_municipio).lower()
-    resultado_filtrado = [
-        linha
-        for linha in resultado
-        if busca_normalizada in remover_acentos(linha.nome).lower()
-    ]
+    if nome_municipio is not None:
+        busca_normalizada = remover_acentos(nome_municipio).lower()
+        resultado = [
+            linha
+            for linha in resultado
+            if busca_normalizada in remover_acentos(linha.nome).lower()
+        ]
 
-    return resultado_filtrado[:limite]
+    total = len(resultado)
+    resultado_pagina = resultado[offset : offset + limite]
+    return total, resultado_pagina
