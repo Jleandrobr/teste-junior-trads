@@ -1,0 +1,39 @@
+name: CI
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copiar .env de exemplo
+        run: cp .env.example .env
+
+      - name: Rodar testes do backend
+        run: docker compose run --rm backend pytest -v
+
+      - name: Derrubar containers
+        if: always()
+        run: docker compose down -v
+
+  frontend-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - run: npm install
+        working-directory: frontend
+
+      - run: npm run build
+        working-directory: frontend
+
