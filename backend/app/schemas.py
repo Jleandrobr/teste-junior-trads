@@ -20,6 +20,9 @@ class MunicipioComIndicadoresResponse(BaseModel):
     renda_media: float
     renda_mediana: float
     qtd_empresas: int
+    qtd_beneficiarios_medicos: int
+    percentual_adesao_plano_medico: float
+    populacao_sem_plano_medico: int
 
     model_config = {"from_attributes": True}
 

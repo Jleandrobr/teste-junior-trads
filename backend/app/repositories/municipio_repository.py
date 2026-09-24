@@ -1,15 +1,22 @@
 import unicodedata
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.db.models import Empresa, Estado, Municipio, PerfilDemografico, Populacao, Renda
+from app.db.models import Beneficiario, Empresa, Estado, Municipio, PerfilDemografico, Populacao, Renda
+
+QTD_BENEFICIARIOS_MEDICOS = func.coalesce(Beneficiario.qtd_beneficiarios_medicos, 0)
+PERCENTUAL_ADESAO_PLANO_MEDICO = QTD_BENEFICIARIOS_MEDICOS * 100.0 / Populacao.populacao
+POPULACAO_SEM_PLANO_MEDICO = Populacao.populacao - QTD_BENEFICIARIOS_MEDICOS
 
 COLUNAS_ORDENAVEIS = {
     "populacao": Populacao.populacao,
     "renda_media": Renda.rendimento_medio,
     "renda_mediana": Renda.rendimento_mediano,
     "indice_envelhecimento": PerfilDemografico.indice_envelhecimento,
+    "beneficiarios": QTD_BENEFICIARIOS_MEDICOS,
+    "adesao": PERCENTUAL_ADESAO_PLANO_MEDICO,
+    "sem_plano": POPULACAO_SEM_PLANO_MEDICO,
 }
 
 
@@ -43,12 +50,16 @@ def listar_com_indicadores(
             Renda.rendimento_medio.label("renda_media"),
             Renda.rendimento_mediano.label("renda_mediana"),
             Empresa.qtd_empresas,
+            QTD_BENEFICIARIOS_MEDICOS.label("qtd_beneficiarios_medicos"),
+            PERCENTUAL_ADESAO_PLANO_MEDICO.label("percentual_adesao_plano_medico"),
+            POPULACAO_SEM_PLANO_MEDICO.label("populacao_sem_plano_medico"),
         )
         .join(Estado, Estado.id == Municipio.estado_id)
         .join(Populacao, Populacao.municipio_id == Municipio.id)
         .join(PerfilDemografico, PerfilDemografico.municipio_id == Municipio.id)
         .join(Renda, Renda.municipio_id == Municipio.id)
         .join(Empresa, Empresa.municipio_id == Municipio.id)
+        .outerjoin(Beneficiario, Beneficiario.municipio_id == Municipio.id)
     )
 
     if estado is not None:
