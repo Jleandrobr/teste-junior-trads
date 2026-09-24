@@ -1,6 +1,6 @@
 from typing import Literal
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
@@ -29,8 +29,8 @@ def listar_municipios(
     regiao: Regiao | None = None,
     ordenar_por: OrdenarPor = "populacao",
     direcao: Direcao = "desc",
-    limite: int = 50,
-    offset: int = 0,
+    limite: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
     db: Session = Depends(get_db),
 ):
     total, resultados = indicadores_service.listar_municipios(

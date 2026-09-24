@@ -36,4 +36,7 @@ def baixar_beneficiarios(ano: int) -> tuple[dict[int, int], dict[int, int]]:
     if linhas_de_outro_periodo > 0:
         print(f"aviso: {linhas_de_outro_periodo} linhas do CSV da ANS não são de {ano} - ignoradas")
 
+    if not medicos_por_municipio:
+        raise ValueError(f"O CSV da ANS não tem nenhuma linha válida do ano {ano} - confira ANO_BENEFICIARIOS")
+
     return medicos_por_municipio, odonto_por_municipio

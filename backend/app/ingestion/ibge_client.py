@@ -10,7 +10,12 @@ def buscar_serie(agregado: int, ano: int, variavel: int, classificacao: str | No
     resposta = requests.get(url, timeout=60)
     resposta.raise_for_status()
     dados = resposta.json()
-    return dados[0]["resultados"][0]["series"]
+    try:
+        return dados[0]["resultados"][0]["series"]
+    except (IndexError, KeyError) as erro:
+        raise ValueError(
+            f"IBGE não retornou dados para o agregado {agregado}, ano {ano}, variável {variavel}"
+        ) from erro
 
 
 def extrair_valores(series: list[dict], ano: int) -> dict[int, float]:

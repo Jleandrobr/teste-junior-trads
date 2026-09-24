@@ -1,3 +1,5 @@
+import pytest
+
 from app.db.models import Beneficiario, Empresa, Estado, Municipio, PerfilDemografico, Populacao, Renda
 
 
@@ -205,3 +207,19 @@ def test_listar_municipios_ordena_por_populacao_sem_plano(client, db_session):
     resultados = resposta.json()["resultados"]
     assert [linha["nome"] for linha in resultados] == ["São Paulo", "Belo Horizonte", "João Pessoa"]
     assert [linha["populacao_sem_plano_medico"] for linha in resultados] == [1000000, 450000, 100000]
+
+
+@pytest.mark.parametrize("parametros", ["limite=0", "limite=-1", "limite=201", "offset=-1"])
+def test_listar_municipios_rejeita_paginacao_invalida(client, parametros):
+    resposta = client.get(f"/api/v1/municipios?{parametros}")
+
+    assert resposta.status_code == 422
+
+
+def test_listar_municipios_aceita_limite_maximo(client, db_session):
+    criar_municipio_completo(db_session, 2507507, "João Pessoa", 25, "PB")
+
+    resposta = client.get("/api/v1/municipios?limite=200&offset=0")
+
+    assert resposta.status_code == 200
+    assert resposta.json()["total"] == 1

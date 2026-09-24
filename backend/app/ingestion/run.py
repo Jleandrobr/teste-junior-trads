@@ -1,3 +1,5 @@
+import sys
+
 from app.db.session import SessionLocal
 from app.services.ingestao_service import (
     ingerir_beneficiarios,
@@ -9,32 +11,26 @@ from app.services.ingestao_service import (
 )
 
 
+def executar_etapa(db, nome: str, funcao) -> None:
+    print(f"Ingerindo {nome}...")
+    try:
+        funcao(db)
+    except Exception as erro:
+        db.rollback()
+        print(f"ERRO na etapa '{nome}': {type(erro).__name__}: {erro}")
+        sys.exit(1)
+    print(f"{nome}: ok.")
+
+
 def main() -> None:
     db = SessionLocal()
     try:
-        print("Ingerindo estados e municípios...")
-        ingerir_localidades(db) #  python -m app.ingestion.run
-        print("Catálogo de localidades ingerido com sucesso.")
-
-        print("Ingerindo população (agregado 6579)...")
-        ingerir_populacao(db)
-        print("População ingerida com sucesso.")
-
-        print("Ingerindo perfil demográfico (agregado 9515)...")
-        ingerir_perfil_demografico(db)
-        print("Perfil demográfico ingerido com sucesso.")
-
-        print("Ingerindo renda (agregado 10289)...")
-        ingerir_renda(db)
-        print("Renda ingerida com sucesso.")
-
-        print("Ingerindo empresas (agregado 1685)...")
-        ingerir_empresa(db)
-        print("Empresas ingeridas com sucesso.")
-
-        print("Ingerindo beneficiários de plano de saúde (ANS)...")
-        ingerir_beneficiarios(db)
-        print("Beneficiários ingeridos com sucesso.")
+        executar_etapa(db, "estados e municípios", ingerir_localidades)
+        executar_etapa(db, "população (agregado 6579)", ingerir_populacao)
+        executar_etapa(db, "perfil demográfico (agregado 9515)", ingerir_perfil_demografico)
+        executar_etapa(db, "renda (agregado 10289)", ingerir_renda)
+        executar_etapa(db, "empresas (agregado 1685)", ingerir_empresa)
+        executar_etapa(db, "beneficiários de plano médico (ANS)", ingerir_beneficiarios)
     finally:
         db.close()
 
