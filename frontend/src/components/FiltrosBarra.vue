@@ -61,6 +61,8 @@ const emit = defineEmits(["update:modelValue"]);
         <option value="renda_media">Renda média</option>
         <option value="renda_mediana">Renda mediana</option>
         <option value="indice_envelhecimento">Índice de envelhecimento</option>
+        <option value="sem_plano">Sem plano médico</option>
+        <option value="adesao">Percentual de adesão</option>
       </select>
     </label>
 

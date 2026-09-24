@@ -35,11 +35,17 @@ function formatarNumero(valor) {
 function formatarMoeda(valor) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(valor);
 }
+
+function formatarPercentual(valor) {
+  const numero = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(valor);
+  return `${numero}%`;
+}
 </script>
 
 <template>
   <div class="cartao tabela-container">
     <h2>Ranking de municípios</h2>
+    <div class="tabela-scroll">
     <table class="tabela-ranking">
       <thead>
         <tr>
@@ -47,6 +53,18 @@ function formatarMoeda(valor) {
           <th>Município</th>
           <th>Estado</th>
           <th class="col-numero">População</th>
+          <th
+            class="col-numero"
+            title="População (IBGE 2021) menos beneficiários de plano médico-hospitalar (ANS 2026)"
+          >
+            Sem plano médico
+          </th>
+          <th
+            class="col-numero"
+            title="Percentual da população com plano médico-hospitalar: beneficiários (ANS 2026) divididos pela população (IBGE 2021)"
+          >
+            % de adesão
+          </th>
           <th class="col-numero">Renda média</th>
           <th class="col-numero">Índice envelh.</th>
           <th class="col-numero">Nº empresas</th>
@@ -54,7 +72,7 @@ function formatarMoeda(valor) {
       </thead>
       <tbody>
         <tr v-if="municipios.length === 0">
-          <td colspan="7">Nenhum município encontrado com esse filtro.</td>
+          <td colspan="9">Nenhum município encontrado com esse filtro.</td>
         </tr>
         <tr
           v-for="(municipio, indice) in municipios"
@@ -65,12 +83,15 @@ function formatarMoeda(valor) {
           <td>{{ municipio.nome }}</td>
           <td class="col-estado">{{ municipio.estado }}</td>
           <td class="col-numero">{{ formatarNumero(municipio.populacao) }}</td>
+          <td class="col-numero">{{ formatarNumero(municipio.populacao_sem_plano_medico) }}</td>
+          <td class="col-numero">{{ formatarPercentual(municipio.percentual_adesao_plano_medico) }}</td>
           <td class="col-numero">{{ formatarMoeda(municipio.renda_media) }}</td>
           <td class="col-numero">{{ municipio.indice_envelhecimento.toFixed(1) }}</td>
           <td class="col-numero">{{ formatarNumero(municipio.qtd_empresas) }}</td>
         </tr>
       </tbody>
     </table>
+    </div>
 
     <div class="paginacao" v-if="total > 0">
       <span class="paginacao-info">
@@ -91,15 +112,19 @@ function formatarMoeda(valor) {
   min-width: 0;
 }
 
+.tabela-scroll {
+  overflow-x: auto;
+}
+
 .tabela-ranking {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .tabela-ranking th {
   text-align: left;
-  padding: 8px 10px;
+  padding: 8px 6px;
   border-bottom: 1px solid var(--cor-borda);
   color: var(--cor-texto-muted);
   font-weight: 600;
@@ -109,7 +134,7 @@ function formatarMoeda(valor) {
 }
 
 .tabela-ranking td {
-  padding: 10px;
+  padding: 10px 6px;
   border-bottom: 1px solid #efeee8;
 }
 

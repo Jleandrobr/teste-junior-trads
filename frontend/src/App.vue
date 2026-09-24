@@ -72,9 +72,9 @@ onMounted(async () => {
     <header class="cabecalho">
       <div>
         <h1>Painel de Inteligência de Mercado</h1>
-        <p class="subtitulo">Trads Corretora - 5.570 municípios · dados do IBGE</p>
+        <p class="subtitulo">Trads Corretora - 5.570 municípios · dados do IBGE e da ANS</p>
       </div>
-      <span class="selo">Dados de referência: 2021-2022</span>
+      <span class="selo">Referência: IBGE 2021-2022 · ANS 2026</span>
     </header>
 
     <FiltrosBarra :estados="estados" :model-value="filtros" @update:model-value="atualizarFiltros" />
