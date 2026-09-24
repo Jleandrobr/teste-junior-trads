@@ -1,5 +1,8 @@
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.db.models import Municipio
+from app.ingestion import ans_client
 from app.ingestion.ibge_client import buscar_serie, extrair_valores
 from app.ingestion.localidades_client import buscar_estados, buscar_municipios
 from app.repositories import estado_repository, indicador_repository, municipio_repository
@@ -25,6 +28,8 @@ VARIAVEL_QTD_EMPRESAS = 367
 VARIAVEL_PESSOAL_ASSALARIADO = 708
 VARIAVEL_SALARIOS = 662
 ANO_EMPRESA = 2021
+
+ANO_BENEFICIARIOS = 2026
 
 
 def ingerir_localidades(db: Session) -> None:
@@ -123,5 +128,29 @@ def ingerir_empresa(db: Session) -> None:
             int(qtd[municipio_id]),
             int(pessoal[municipio_id]),
             salarios[municipio_id],
+        )
+    db.commit()
+
+
+def ingerir_beneficiarios(db: Session) -> None:
+    ano = ANO_BENEFICIARIOS
+
+    medicos_por_cd, odonto_por_cd = ans_client.baixar_beneficiarios(ano)
+
+    municipio_ids = db.execute(select(Municipio.id)).scalars().all()
+    municipio_id_por_cd = {municipio_id // 10: municipio_id for municipio_id in municipio_ids}
+
+    for cd_municipio in medicos_por_cd:
+        municipio_id = municipio_id_por_cd.get(cd_municipio)
+        if municipio_id is None:
+            print(f"aviso: CD_MUNICIPIO {cd_municipio} da ANS não bate com nenhum município IBGE - pulando")
+            continue
+
+        indicador_repository.salvar_beneficiario(
+            db,
+            municipio_id,
+            ano,
+            medicos_por_cd[cd_municipio],
+            odonto_por_cd[cd_municipio],
         )
     db.commit()

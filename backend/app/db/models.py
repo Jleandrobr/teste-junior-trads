@@ -68,3 +68,14 @@ class Empresa(Base):
     qtd_empresas: Mapped[int]
     pessoal_assalariado: Mapped[int]
     salarios_mil_reais: Mapped[float] = mapped_column(Numeric(14, 2))
+
+
+class Beneficiario(Base):
+    __tablename__ = "beneficiarios"
+    __table_args__ = (UniqueConstraint("municipio_id", "ano"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    municipio_id: Mapped[int] = mapped_column(ForeignKey("municipios.id"))
+    ano: Mapped[int]
+    qtd_beneficiarios_medicos: Mapped[int]
+    qtd_beneficiarios_odonto: Mapped[int]

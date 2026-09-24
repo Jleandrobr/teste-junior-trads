@@ -1,5 +1,6 @@
 from app.db.session import SessionLocal
 from app.services.ingestao_service import (
+    ingerir_beneficiarios,
     ingerir_empresa,
     ingerir_localidades,
     ingerir_perfil_demografico,
@@ -30,6 +31,10 @@ def main() -> None:
         print("Ingerindo empresas (agregado 1685)...")
         ingerir_empresa(db)
         print("Empresas ingeridas com sucesso.")
+
+        print("Ingerindo beneficiários de plano de saúde (ANS)...")
+        ingerir_beneficiarios(db)
+        print("Beneficiários ingeridos com sucesso.")
     finally:
         db.close()
 
