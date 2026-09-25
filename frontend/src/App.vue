@@ -1,18 +1,29 @@
 <script setup>
-import { ref, reactive, onMounted } from "vue";
-import { buscarEstados, buscarMunicipios } from "./api.js";
+import { ref, reactive, computed, onMounted } from "vue";
+import { buscarEstados, buscarMunicipios, buscarResumo } from "./api.js";
 import FiltrosBarra from "./components/FiltrosBarra.vue";
 import TabelaRanking from "./components/TabelaRanking.vue";
 import GraficoDispersao from "./components/GraficoDispersao.vue";
+import CartoesResumo from "./components/CartoesResumo.vue";
+import DestaquesMercado from "./components/DestaquesMercado.vue";
 
 const LIMITE_POR_PAGINA = 50;
 
 const estados = ref([]);
 const municipios = ref([]);
+const resumo = ref(null);
+const visao = ref("geral");
 const totalMunicipios = ref(0);
 const paginaAtual = ref(1);
 const carregando = ref(true);
 const erro = ref(null);
+
+const ORDENACAO_PADRAO_POR_VISAO = {
+  geral: "populacao",
+  saude: "sem_plano",
+  odonto: "sem_odonto",
+  empresarial: "empresas",
+};
 
 const filtros = reactive({
   estado: "",
@@ -24,17 +35,25 @@ const filtros = reactive({
 
 async function carregarMunicipios() {
   try {
-    const resposta = await buscarMunicipios({
-      estado: filtros.estado,
-      regiao: filtros.regiao,
-      nomeMunicipio: filtros.nomeMunicipio,
-      ordenarPor: filtros.ordenarPor,
-      direcao: filtros.direcao,
-      limite: LIMITE_POR_PAGINA,
-      offset: (paginaAtual.value - 1) * LIMITE_POR_PAGINA,
-    });
+    const [resposta, resumoResposta] = await Promise.all([
+      buscarMunicipios({
+        estado: filtros.estado,
+        regiao: filtros.regiao,
+        nomeMunicipio: filtros.nomeMunicipio,
+        ordenarPor: filtros.ordenarPor,
+        direcao: filtros.direcao,
+        limite: LIMITE_POR_PAGINA,
+        offset: (paginaAtual.value - 1) * LIMITE_POR_PAGINA,
+      }),
+      buscarResumo({
+        estado: filtros.estado,
+        regiao: filtros.regiao,
+        nomeMunicipio: filtros.nomeMunicipio,
+      }),
+    ]);
     municipios.value = resposta.resultados;
     totalMunicipios.value = resposta.total;
+    resumo.value = resumoResposta;
     erro.value = null;
   } catch (e) {
     erro.value = e.message;
@@ -50,6 +69,34 @@ function atualizarFiltros(novosFiltros) {
 
   clearTimeout(temporizadorBusca);
   temporizadorBusca = setTimeout(carregarMunicipios, 900);
+}
+
+const filtrosAlterados = computed(
+  () =>
+    Boolean(filtros.estado || filtros.regiao || filtros.nomeMunicipio) ||
+    filtros.ordenarPor !== ORDENACAO_PADRAO_POR_VISAO[visao.value] ||
+    filtros.direcao !== "desc"
+);
+
+function limparFiltros() {
+  clearTimeout(temporizadorBusca);
+  Object.assign(filtros, {
+    estado: "",
+    regiao: "",
+    nomeMunicipio: "",
+    ordenarPor: ORDENACAO_PADRAO_POR_VISAO[visao.value],
+    direcao: "desc",
+  });
+  paginaAtual.value = 1;
+  carregarMunicipios();
+}
+
+function mudarVisao(novaVisao) {
+  visao.value = novaVisao;
+  filtros.ordenarPor = ORDENACAO_PADRAO_POR_VISAO[novaVisao];
+  filtros.direcao = "desc";
+  paginaAtual.value = 1;
+  carregarMunicipios();
 }
 
 function irParaPagina(novaPagina) {
@@ -77,21 +124,33 @@ onMounted(async () => {
       <span class="selo">Referência: IBGE 2021-2022 · ANS 2026</span>
     </header>
 
-    <FiltrosBarra :estados="estados" :model-value="filtros" @update:model-value="atualizarFiltros" />
+    <FiltrosBarra
+      :estados="estados"
+      :model-value="filtros"
+      :filtros-alterados="filtrosAlterados"
+      @update:model-value="atualizarFiltros"
+      @limpar="limparFiltros"
+    />
 
     <p v-if="erro" class="mensagem">Erro ao falar com a API: {{ erro }}</p>
     <p v-else-if="carregando" class="mensagem">Carregando...</p>
-    <div v-else class="conteudo">
-      <TabelaRanking
-        :municipios="municipios"
-        :offset="(paginaAtual - 1) * LIMITE_POR_PAGINA"
-        :total="totalMunicipios"
-        :pagina-atual="paginaAtual"
-        :limite-por-pagina="LIMITE_POR_PAGINA"
-        @mudar-pagina="irParaPagina"
-      />
-      <GraficoDispersao :municipios="municipios" />
-    </div>
+    <template v-else>
+      <CartoesResumo v-if="resumo" :resumo="resumo" />
+      <DestaquesMercado v-if="resumo" :destaques="resumo.destaques" />
+      <div class="conteudo">
+        <GraficoDispersao :municipios="municipios" />
+        <TabelaRanking
+          :visao="visao"
+          :municipios="municipios"
+          :offset="(paginaAtual - 1) * LIMITE_POR_PAGINA"
+          :total="totalMunicipios"
+          :pagina-atual="paginaAtual"
+          :limite-por-pagina="LIMITE_POR_PAGINA"
+          @mudar-pagina="irParaPagina"
+          @mudar-visao="mudarVisao"
+        />
+      </div>
+    </template>
   </main>
 </template>
 
@@ -164,6 +223,7 @@ main {
   display: flex;
   gap: 24px;
   align-items: flex-start;
+  flex-wrap: wrap;
 }
 
 .cartao {

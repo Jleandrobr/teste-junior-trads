@@ -24,3 +24,16 @@ export async function buscarMunicipios({ estado, nomeMunicipio, regiao, ordenarP
   }
   return resposta.json();
 }
+
+export async function buscarResumo({ estado, nomeMunicipio, regiao }) {
+  const params = new URLSearchParams();
+  if (estado) params.set("estado", estado);
+  if (nomeMunicipio) params.set("nome_municipio", nomeMunicipio);
+  if (regiao) params.set("regiao", regiao);
+
+  const resposta = await fetch(`${API_URL}/api/v1/municipios/resumo?${params.toString()}`);
+  if (!resposta.ok) {
+    throw new Error(`API respondeu ${resposta.status} ao buscar o resumo`);
+  }
+  return resposta.json();
+}
