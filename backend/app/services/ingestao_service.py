@@ -23,6 +23,11 @@ VARIAVEL_RENDIMENTO_MEDIANO = 13537
 ANO_RENDA = 2022
 CLASSIFICACAO_RENDA = "2[6794]|86[95251]"
 
+AGREGADO_RENDA_PER_CAPITA = 10295
+VARIAVEL_RENDIMENTO_PER_CAPITA_MEDIO = 13431
+VARIAVEL_RENDIMENTO_PER_CAPITA_MEDIANO = 13534
+CLASSIFICACAO_RENDA_PER_CAPITA = "2[6794]|86[95251]|58[95253]"
+
 AGREGADO_EMPRESA = 1685
 VARIAVEL_QTD_EMPRESAS = 367
 VARIAVEL_PESSOAL_ASSALARIADO = 708
@@ -89,8 +94,22 @@ def ingerir_renda(db: Session) -> None:
     serie_mediano = buscar_serie(AGREGADO_RENDA, ano, VARIAVEL_RENDIMENTO_MEDIANO, CLASSIFICACAO_RENDA)
     mediano = extrair_valores(serie_mediano, ano)
 
+    serie_per_capita_medio = buscar_serie(
+        AGREGADO_RENDA_PER_CAPITA, ano, VARIAVEL_RENDIMENTO_PER_CAPITA_MEDIO, CLASSIFICACAO_RENDA_PER_CAPITA
+    )
+    per_capita_medio = extrair_valores(serie_per_capita_medio, ano)
+
+    serie_per_capita_mediano = buscar_serie(
+        AGREGADO_RENDA_PER_CAPITA, ano, VARIAVEL_RENDIMENTO_PER_CAPITA_MEDIANO, CLASSIFICACAO_RENDA_PER_CAPITA
+    )
+    per_capita_mediano = extrair_valores(serie_per_capita_mediano, ano)
+
     for municipio_id in medio:
-        if municipio_id not in mediano:
+        if (
+            municipio_id not in mediano
+            or municipio_id not in per_capita_medio
+            or municipio_id not in per_capita_mediano
+        ):
             print(f"aviso: município {municipio_id} sem renda completa - pulando")
             continue
 
@@ -100,6 +119,8 @@ def ingerir_renda(db: Session) -> None:
             ano,
             medio[municipio_id],
             mediano[municipio_id],
+            per_capita_medio[municipio_id],
+            per_capita_mediano[municipio_id],
         )
     db.commit()
 

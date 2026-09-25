@@ -37,18 +37,24 @@ def salvar_renda(
     ano: int,
     rendimento_medio: float,
     rendimento_mediano: float,
+    rendimento_per_capita_medio: float,
+    rendimento_per_capita_mediano: float,
 ) -> None:
     stmt = insert(Renda).values(
         municipio_id=municipio_id,
         ano=ano,
         rendimento_medio=rendimento_medio,
         rendimento_mediano=rendimento_mediano,
+        rendimento_per_capita_medio=rendimento_per_capita_medio,
+        rendimento_per_capita_mediano=rendimento_per_capita_mediano,
     )
     stmt = stmt.on_conflict_do_update(
         index_elements=["municipio_id", "ano"],
         set_={
             "rendimento_medio": rendimento_medio,
             "rendimento_mediano": rendimento_mediano,
+            "rendimento_per_capita_medio": rendimento_per_capita_medio,
+            "rendimento_per_capita_mediano": rendimento_per_capita_mediano,
         },
     )
     db.execute(stmt)

@@ -28,7 +28,7 @@ def main() -> None:
         executar_etapa(db, "estados e municípios", ingerir_localidades)
         executar_etapa(db, "população (agregado 6579)", ingerir_populacao)
         executar_etapa(db, "perfil demográfico (agregado 9515)", ingerir_perfil_demografico)
-        executar_etapa(db, "renda (agregado 10289)", ingerir_renda)
+        executar_etapa(db, "renda (agregados 10289 e 10295)", ingerir_renda)
         executar_etapa(db, "empresas (agregado 1685)", ingerir_empresa)
         executar_etapa(db, "beneficiários de plano médico (ANS)", ingerir_beneficiarios)
     finally:

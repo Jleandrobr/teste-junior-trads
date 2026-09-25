@@ -56,6 +56,8 @@ class Renda(Base):
     ano: Mapped[int]
     rendimento_medio: Mapped[float] = mapped_column(Numeric(10, 2))
     rendimento_mediano: Mapped[float] = mapped_column(Numeric(10, 2))
+    rendimento_per_capita_medio: Mapped[float] = mapped_column(Numeric(10, 2))
+    rendimento_per_capita_mediano: Mapped[float] = mapped_column(Numeric(10, 2))
 
 
 class Empresa(Base):
