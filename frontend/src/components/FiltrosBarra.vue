@@ -8,9 +8,13 @@ defineProps({
     type: Object,
     required: true,
   },
+  filtrosAlterados: {
+    type: Boolean,
+    default: false,
+  },
 });
 
-const emit = defineEmits(["update:modelValue"]);
+const emit = defineEmits(["update:modelValue", "limpar"]);
 </script>
 
 <template>
@@ -58,11 +62,11 @@ const emit = defineEmits(["update:modelValue"]);
         @change="emit('update:modelValue', { ...modelValue, ordenarPor: $event.target.value })"
       >
         <option value="populacao">População</option>
-        <option value="renda_media">Renda média</option>
-        <option value="renda_mediana">Renda mediana</option>
-        <option value="indice_envelhecimento">Índice de envelhecimento</option>
+        <option value="renda_per_capita_media">Renda per capita média</option>
         <option value="sem_plano">Sem plano médico</option>
-        <option value="adesao">Percentual de adesão</option>
+        <option value="adesao">% de adesão (médico)</option>
+        <option value="sem_odonto">Sem plano odontológico</option>
+        <option value="empresas">Número de empresas</option>
       </select>
     </label>
 
@@ -76,6 +80,10 @@ const emit = defineEmits(["update:modelValue"]);
         <option value="asc">Menor primeiro</option>
       </select>
     </label>
+
+    <button type="button" class="botao-limpar" :disabled="!filtrosAlterados" @click="emit('limpar')">
+      Limpar filtros
+    </button>
   </div>
 </template>
 
@@ -91,7 +99,7 @@ const emit = defineEmits(["update:modelValue"]);
   display: flex;
   flex-direction: column;
   gap: 6px;
-  width: 220px;
+  width: 190px;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
@@ -111,6 +119,30 @@ const emit = defineEmits(["update:modelValue"]);
   border: 1px solid #d6d5cd;
   border-radius: 8px;
   padding: 10px 12px;
+}
+
+.botao-limpar {
+  margin-left: auto;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cor-accent);
+  background: #ffffff;
+  border: 1px solid var(--cor-accent);
+  border-radius: 8px;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+
+.botao-limpar:hover:not(:disabled) {
+  background: var(--cor-accent-fundo);
+}
+
+.botao-limpar:disabled {
+  color: var(--cor-texto-muted);
+  border-color: #d6d5cd;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .filtros select:focus,
