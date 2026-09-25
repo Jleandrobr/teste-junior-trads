@@ -39,6 +39,14 @@ services:
       db-test:
         condition: service_healthy
 
+  agendador:
+    build: ./backend
+    env_file: .env
+    command: ["python", "-u", "-m", "app.ingestion.agendador"]
+    depends_on:
+      db:
+        condition: service_healthy
+
   frontend:
     build: ./frontend
     volumes:
