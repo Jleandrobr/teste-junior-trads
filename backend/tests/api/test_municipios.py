@@ -14,6 +14,8 @@ def criar_municipio_completo(
     indice_envelhecimento=50.0,
     renda_media=2000.0,
     renda_mediana=1500.0,
+    renda_per_capita_media=1000.0,
+    renda_per_capita_mediana=600.0,
     qtd_empresas=100,
     qtd_beneficiarios_medicos=None,
     qtd_beneficiarios_odonto=0,
@@ -41,6 +43,8 @@ def criar_municipio_completo(
             ano=2022,
             rendimento_medio=renda_media,
             rendimento_mediano=renda_mediana,
+            rendimento_per_capita_medio=renda_per_capita_media,
+            rendimento_per_capita_mediano=renda_per_capita_mediana,
         )
     )
     db_session.add(
@@ -223,3 +227,97 @@ def test_listar_municipios_aceita_limite_maximo(client, db_session):
 
     assert resposta.status_code == 200
     assert resposta.json()["total"] == 1
+
+
+def test_listar_municipios_calcula_indicadores_de_odonto_e_empresas(client, db_session):
+    criar_municipio_completo(
+        db_session, 1, "A", 25, "PB", populacao=1000, qtd_empresas=50,
+        qtd_beneficiarios_medicos=100, qtd_beneficiarios_odonto=250,
+    )
+
+    municipio = client.get("/api/v1/municipios").json()["resultados"][0]
+
+    assert municipio["qtd_beneficiarios_odonto"] == 250
+    assert municipio["percentual_adesao_odonto"] == 25.0
+    assert municipio["populacao_sem_odonto"] == 750
+    assert municipio["empresas_por_mil_habitantes"] == 50.0
+    assert municipio["assalariados_por_mil_habitantes"] == 1000.0
+
+
+def test_listar_municipios_ordena_por_populacao_sem_odonto(client, db_session):
+    criar_municipio_completo(
+        db_session, 1, "A", 25, "PB", populacao=1000,
+        qtd_beneficiarios_medicos=0, qtd_beneficiarios_odonto=900,
+    )
+    criar_municipio_completo(
+        db_session, 2, "B", 25, "PB", populacao=1000,
+        qtd_beneficiarios_medicos=0, qtd_beneficiarios_odonto=100,
+    )
+
+    resposta = client.get("/api/v1/municipios?ordenar_por=sem_odonto")
+
+    assert [m["nome"] for m in resposta.json()["resultados"]] == ["B", "A"]
+
+
+def test_resumo_agrega_indicadores_e_destaques(client, db_session):
+    criar_municipio_completo(
+        db_session, 1, "Grande", 25, "PB", populacao=3000, renda_per_capita_media=1000.0,
+        qtd_empresas=30, qtd_beneficiarios_medicos=300, qtd_beneficiarios_odonto=100,
+    )
+    criar_municipio_completo(
+        db_session, 2, "Rico", 35, "SP", regiao="Sudeste", populacao=1000, renda_per_capita_media=5000.0,
+        qtd_empresas=100, qtd_beneficiarios_medicos=500, qtd_beneficiarios_odonto=100,
+    )
+
+    resposta = client.get("/api/v1/municipios/resumo")
+
+    assert resposta.status_code == 200
+    dados = resposta.json()
+    assert dados["total_municipios"] == 2
+    assert dados["populacao_total"] == 4000
+    assert dados["populacao_sem_plano_medico"] == 3200
+    assert dados["populacao_sem_odonto"] == 3800
+    assert dados["percentual_adesao_plano_medico"] == 20.0
+    assert dados["qtd_empresas"] == 130
+    assert dados["renda_per_capita_media_ponderada"] == 2000.0
+    assert dados["destaques"]["maior_mercado_sem_plano_medico"]["nome"] == "Grande"
+    assert dados["destaques"]["maior_densidade_empresarial"]["nome"] == "Rico"
+    assert dados["destaques"]["maior_renda_per_capita"]["nome"] == "Rico"
+
+
+def test_resumo_respeita_filtros(client, db_session):
+    criar_municipio_completo(db_session, 1, "A", 25, "PB", populacao=3000)
+    criar_municipio_completo(db_session, 2, "B", 35, "SP", regiao="Sudeste", populacao=1000)
+
+    dados = client.get("/api/v1/municipios/resumo?regiao=Sudeste").json()
+
+    assert dados["total_municipios"] == 1
+    assert dados["populacao_total"] == 1000
+
+
+def test_resumo_sem_resultados_retorna_zeros(client):
+    dados = client.get("/api/v1/municipios/resumo").json()
+
+    assert dados["total_municipios"] == 0
+    assert dados["populacao_total"] == 0
+    assert dados["destaques"]["maior_renda_per_capita"] is None
+
+
+def test_listar_municipios_retorna_renda_per_capita(client, db_session):
+    criar_municipio_completo(
+        db_session, 1, "A", 25, "PB", renda_per_capita_media=1879.0, renda_per_capita_mediana=1000.0
+    )
+
+    municipio = client.get("/api/v1/municipios").json()["resultados"][0]
+
+    assert municipio["renda_per_capita_media"] == 1879.0
+    assert municipio["renda_per_capita_mediana"] == 1000.0
+
+
+def test_listar_municipios_ordena_por_renda_per_capita_mediana(client, db_session):
+    criar_municipio_completo(db_session, 1, "Baixa", 25, "PB", renda_per_capita_mediana=500.0)
+    criar_municipio_completo(db_session, 2, "Alta", 25, "PB", renda_per_capita_mediana=1500.0)
+
+    resposta = client.get("/api/v1/municipios?ordenar_por=renda_per_capita_mediana")
+
+    assert [m["nome"] for m in resposta.json()["resultados"]] == ["Alta", "Baixa"]
