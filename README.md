@@ -9,6 +9,8 @@ Resposta ao [desafio técnico](https://github.com/Trads-Corretora/teste-junior)
 da vaga de Programador Júnior I. Detalhes de arquitetura em
 [`backend/ARQUITETURA.md`](./backend/ARQUITETURA.md).
 
+**Link da aplicação hospedada:** https://painel.187.127.22.194.sslip.io
+
 ## Sumário
 
 1. [Como rodar](#como-rodar)
