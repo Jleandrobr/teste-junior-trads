@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres:16-alpine
+    env_file: .env
+    restart: unless-stopped
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  painel-api:
+    build: ./backend
+    env_file: .env
+    restart: unless-stopped
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - default
+      - proxy
+
+  agendador:
+    build: ./backend
+    env_file: .env
+    restart: unless-stopped
+    command: ["python", "-u", "-m", "app.ingestion.agendador"]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  painel-web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    restart: unless-stopped
+    networks:
+      - proxy
+
+volumes:
+  pgdata:
+
+networks:
+  proxy:
+    external: true
+    name: lume_proxy_net

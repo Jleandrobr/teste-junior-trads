@@ -1,17 +1,2 @@
 node_modules
 dist
-
-# Envs
-.env
-.env.*
-!.env.example
-
-# Editores / SO
-.vscode
-.idea
-.DS_Store
-Thumbs.db
-
-# Git / logs
-.git
-npm-debug.log*
