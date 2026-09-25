@@ -95,4 +95,19 @@ const cartoes = computed(() => {
 .cartao-resumo.destaque .valor {
   color: var(--cor-accent);
 }
+
+@media (max-width: 768px) {
+  .cartoes-resumo {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .cartao-resumo {
+    padding: 14px;
+  }
+
+  .valor {
+    font-size: 22px;
+  }
+}
 </style>

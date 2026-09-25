@@ -239,4 +239,29 @@ main {
   font-weight: 600;
   color: var(--cor-texto-titulo);
 }
+
+@media (max-width: 768px) {
+  main {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .cabecalho {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .cabecalho h1 {
+    font-size: 24px;
+  }
+
+  .selo {
+    white-space: normal;
+  }
+
+  .cartao {
+    padding: 16px;
+  }
+}
 </style>

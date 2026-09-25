@@ -218,4 +218,15 @@ watch(modo, desenharGrafico);
   width: 100%;
   height: 380px;
 }
+
+@media (max-width: 768px) {
+  .grafico-cabecalho {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .grafico-canvas {
+    height: 320px;
+  }
+}
 </style>

@@ -145,6 +145,28 @@ const emit = defineEmits(["update:modelValue", "limpar"]);
   opacity: 0.6;
 }
 
+@media (max-width: 768px) {
+  .filtros {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .filtros label {
+    width: auto;
+  }
+
+  .botao-limpar {
+    grid-column: 1 / -1;
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .filtros {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .filtros select:focus,
 .filtros input:focus {
   outline: 2px solid var(--cor-accent);

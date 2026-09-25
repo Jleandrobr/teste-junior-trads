@@ -323,4 +323,22 @@ const totalPaginas = computed(() => Math.max(1, Math.ceil(props.total / props.li
   height: 100%;
   background: var(--cor-accent);
 }
+
+@media (max-width: 768px) {
+  .abas {
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .abas button {
+    white-space: nowrap;
+  }
+
+  .paginacao {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}
 </style>
